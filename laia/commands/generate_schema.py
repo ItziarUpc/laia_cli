@@ -40,8 +40,8 @@ def generate_schema():
     if use_auth:
         schema[schema_name]["x-auth"] = True
 
-    # Crear archivo en app/openapi/schemas
-    output_dir = os.path.join("app", "openapi", "schemas")
+    # Crear archivo en backend/openapi/schemas
+    output_dir = os.path.join("backend", "openapi", "schemas")
     os.makedirs(output_dir, exist_ok=True)
 
     output_path = os.path.join(output_dir, f"{schema_name}.yaml")

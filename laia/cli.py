@@ -9,7 +9,10 @@ def main():
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("init", help="Init new project of LAIA")
-    subparsers.add_parser("start", help="Start existing LAIA project")
+    start_parser = subparsers.add_parser("start", help="Start existing LAIA project")
+    start_parser.add_argument("--backend", action="store_true", help="Start backend server")
+    start_parser.add_argument("--backoffice", action="store_true", help="Start backoffice project")
+    start_parser.add_argument("--frontend", action="store_true", help="Start frontend project")
     subparsers.add_parser("generate-schema", help="Generate new OpenAPI schema")
 
     subparsers.add_parser("help", help="Help")
@@ -19,7 +22,7 @@ def main():
     if args.command == "init":
         init_project()
     elif args.command == "start":
-        start_project()
+        start_project(args)
     elif args.command == "generate-schema":
         generate_schema()
     elif args.command == "help":
