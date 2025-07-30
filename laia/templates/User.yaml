@@ -2,19 +2,38 @@ User:
   type: object
   x-auth: true
   properties:
-    id:
-      type: integer
-      format: int64
-      description: The user's unique ID
     name:
       type: string
       description: The user's name
+      x_frontend_fieldName: Name
+      x_frontend_fieldDescription: This is the User Name
+      x_frontend_editable: true
+      x_frontend_placeholder: Write the Name of the User
     surnames:
       type: string
       description: The user's surnames
+      x_frontend_fieldName: Surnames
+      x_frontend_fieldDescription: This is the User Surnames
+      x_frontend_editable: true
+      x_frontend_placeholder: Write the Surnames of the User
     email:
       type: string
       description: The user's email
+      x_frontend_fieldName: Email
+      x_frontend_fieldDescription: This is the User Email
+      x_frontend_editable: true
+      x_frontend_placeholder: Write the Email of the User
     password:
       type: string
       description: The user's password
+      x_frontend_fieldName: Password
+      x_frontend_fieldDescription: This is the User Password
+      x_frontend_editable: true
+      x_frontend_placeholder: Write the Password of the User
+  required:
+    - email
+    - password
+  x-frontend-defaultFields:
+    - name
+    - surnames
+    - email

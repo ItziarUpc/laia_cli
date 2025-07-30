@@ -21,6 +21,7 @@ import { MatInputModule } from '@angular/material/input';
                 
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtInterceptor } from './services/jwt.interceptor';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { JwtInterceptor } from './services/jwt.interceptor';
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatPaginatorModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
