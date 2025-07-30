@@ -1,6 +1,8 @@
 import subprocess
 import os
 
+from laia.generators.backoffice.angular.models_component_ts import modify_models_component_ts
+
 def run_command(command, cwd=None):
     try:
         subprocess.run(command, shell=True, check=True, cwd=cwd)
@@ -39,6 +41,7 @@ def start_project(args):
 
     if args.backoffice:
         print("🚀 Starting backoffice...")
+        modify_models_component_ts()
         backoffice_path = "backoffice"
         env = os.environ.copy()
         env["NG_CLI_ANALYTICS"] = "ci"  # <- Previene el error 'setRawMode EIO'

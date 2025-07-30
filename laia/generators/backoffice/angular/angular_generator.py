@@ -23,6 +23,9 @@ from laia.generators.backoffice.angular.intercept_service import add_intercept_s
 from laia.generators.backoffice.angular.login_component_html import modify_login_component_html
 from laia.generators.backoffice.angular.login_component_scss import modify_login_component_scss
 from laia.generators.backoffice.angular.login_component_ts import modify_login_component_ts
+from laia.generators.backoffice.angular.models_component_html import modify_models_component_html
+from laia.generators.backoffice.angular.models_component_scss import modify_models_component_scss
+from laia.generators.backoffice.angular.models_component_ts import modify_models_component_ts
 from laia.generators.backoffice.angular.route_to_app_routing import add_route_to_app_routing
 from laia.generators.backoffice.angular.table_component_html import modify_table_component_html
 from laia.generators.backoffice.angular.table_component_scss import modify_table_component_scss
@@ -144,5 +147,9 @@ def generate_angular_project(project_name: str):
   modify_auth_component_ts("backend/openapi/schemas/User.yaml")
   modify_auth_component_html()
   modify_auth_component_scss()
+
+  modify_models_component_html()
+  modify_models_component_scss()
+  modify_models_component_ts()
 
   print("✅ Angular backoffice created successfully.")

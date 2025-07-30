@@ -1,7 +1,7 @@
 import json
 import os
 
-from laia.generators.backoffice_generator import create_backoffice_project
+from laia.generators.backoffice.backoffice_generator import create_backoffice_project
 from laia.generators.files_generator import copy_template, create_directory, create_file
 
 def init_project():
