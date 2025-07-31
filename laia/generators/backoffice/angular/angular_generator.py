@@ -5,31 +5,34 @@ import shutil
 import sys
 import inspect
 from pydantic import BaseModel
-from laia.generators.backoffice.angular.app_component_html import modify_app_component_html
-from laia.generators.backoffice.angular.app_component_module import modify_app_component_module
-from laia.generators.backoffice.angular.app_component_scss import modify_app_component_scss
-from laia.generators.backoffice.angular.app_component_ts import modify_app_component_ts
-from laia.generators.backoffice.angular.auth_component_html import modify_auth_component_html
-from laia.generators.backoffice.angular.auth_component_scss import modify_auth_component_scss
-from laia.generators.backoffice.angular.auth_component_ts import modify_auth_component_ts
-from laia.generators.backoffice.angular.auth_guard import add_auth_guard
-from laia.generators.backoffice.angular.auth_service import add_auth_service
-from laia.generators.backoffice.angular.comm_service import add_comm_service
-from laia.generators.backoffice.angular.global_page_style import modify_global_page_style
-from laia.generators.backoffice.angular.home_component_html import modify_home_component_html
-from laia.generators.backoffice.angular.home_component_scss import modify_home_component_scss
-from laia.generators.backoffice.angular.home_component_ts import modify_home_component_ts
-from laia.generators.backoffice.angular.intercept_service import add_intercept_service
-from laia.generators.backoffice.angular.login_component_html import modify_login_component_html
-from laia.generators.backoffice.angular.login_component_scss import modify_login_component_scss
-from laia.generators.backoffice.angular.login_component_ts import modify_login_component_ts
-from laia.generators.backoffice.angular.models_component_html import modify_models_component_html
-from laia.generators.backoffice.angular.models_component_scss import modify_models_component_scss
-from laia.generators.backoffice.angular.models_component_ts import modify_models_component_ts
-from laia.generators.backoffice.angular.route_to_app_routing import add_route_to_app_routing
-from laia.generators.backoffice.angular.table_component_html import modify_table_component_html
-from laia.generators.backoffice.angular.table_component_scss import modify_table_component_scss
-from laia.generators.backoffice.angular.table_component_ts import modify_table_component_ts
+from laia.generators.backoffice.angular.app_component.app_component_html import modify_app_component_html
+from laia.generators.backoffice.angular.app_component.app_component_module import modify_app_component_module
+from laia.generators.backoffice.angular.app_component.app_component_scss import modify_app_component_scss
+from laia.generators.backoffice.angular.app_component.app_component_ts import modify_app_component_ts
+from laia.generators.backoffice.angular.auth.auth_component_html import modify_auth_component_html
+from laia.generators.backoffice.angular.auth.auth_component_scss import modify_auth_component_scss
+from laia.generators.backoffice.angular.auth.auth_component_ts import modify_auth_component_ts
+from laia.generators.backoffice.angular.auth.new_user_html import modify_new_user_component_html
+from laia.generators.backoffice.angular.auth.new_user_scss import modify_new_user_component_scss
+from laia.generators.backoffice.angular.auth.new_user_ts import modify_new_user_component_ts
+from laia.generators.backoffice.angular.services.auth_guard import add_auth_guard
+from laia.generators.backoffice.angular.services.auth_service import add_auth_service
+from laia.generators.backoffice.angular.services.comm_service import add_comm_service
+from laia.generators.backoffice.angular.app_component.global_page_style import modify_global_page_style
+from laia.generators.backoffice.angular.home.home_component_html import modify_home_component_html
+from laia.generators.backoffice.angular.home.home_component_scss import modify_home_component_scss
+from laia.generators.backoffice.angular.home.home_component_ts import modify_home_component_ts
+from laia.generators.backoffice.angular.services.intercept_service import add_intercept_service
+from laia.generators.backoffice.angular.login.login_component_html import modify_login_component_html
+from laia.generators.backoffice.angular.login.login_component_scss import modify_login_component_scss
+from laia.generators.backoffice.angular.login.login_component_ts import modify_login_component_ts
+from laia.generators.backoffice.angular.models.models_component_html import modify_models_component_html
+from laia.generators.backoffice.angular.models.models_component_scss import modify_models_component_scss
+from laia.generators.backoffice.angular.models.models_component_ts import modify_models_component_ts
+from laia.generators.backoffice.angular.route_to_app_routing import add_new_route, add_route_to_app_routing
+from laia.generators.backoffice.angular.table.table_component_html import modify_table_component_html
+from laia.generators.backoffice.angular.table.table_component_scss import modify_table_component_scss
+from laia.generators.backoffice.angular.table.table_component_ts import modify_table_component_ts
 from laia.generators.files_generator import create_directory
 from laia.generators.generate_service_ts import generate_ts_service
 from laia.generators.generate_ts_interface import generate_all_interfaces_from_schemas
@@ -147,6 +150,23 @@ def generate_angular_project(project_name: str):
   modify_auth_component_ts("backend/openapi/schemas/User.yaml")
   modify_auth_component_html()
   modify_auth_component_scss()
+
+  subprocess.run(
+    ["ng", "generate", "component", "/pages/auth/new-user"],
+    cwd="backoffice",
+    check=True
+  )
+
+  modify_new_user_component_html("backend/openapi/schemas/User.yaml")
+  modify_new_user_component_ts()
+  modify_new_user_component_scss()
+
+  add_new_route(
+    path="auth/new-user",
+    component="NewUserComponent",
+    import_path="./pages/auth/new-user/new-user.component",
+    guard=True
+  )
 
   modify_models_component_html()
   modify_models_component_scss()

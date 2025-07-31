@@ -15,37 +15,37 @@ def modify_app_component_html():
 <mat-sidenav-container class="example-container" *ngIf="!isLogin()">
     <mat-sidenav mode="side" opened>
       <mat-nav-list>
-        <a mat-list-item href="/" class="nav-item">
+        <a mat-list-item [routerLink]="'/'" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
           <span class="nav-content">
             <mat-icon>home</mat-icon>
             <span class="no-mobile">Home</span>
           </span>
         </a>
-        <a mat-list-item href="/auth" class="nav-item">
+        <a mat-list-item [routerLink]="'/auth'" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
           <span class="nav-content">
             <mat-icon>people</mat-icon>
             <span class="no-mobile">Auth</span>
           </span>
         </a>
-        <a mat-list-item href="/schemas" class="nav-item">
+        <a mat-list-item [routerLink]="'/schemas'" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
           <span class="nav-content">
             <mat-icon>account_tree</mat-icon>
             <span class="no-mobile">Schemas</span>
           </span>
         </a>
-        <a mat-list-item href="/models" class="nav-item">
+        <a mat-list-item [routerLink]="'/models'" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
           <span class="nav-content">
             <mat-icon>storage</mat-icon>
             <span class="no-mobile">Models</span>
           </span>
         </a>
-        <a mat-list-item href="/storage" class="nav-item">
+        <a mat-list-item [routerLink]="'/storage'" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
           <span class="nav-content">
             <mat-icon>cloud_upload</mat-icon>
             <span class="no-mobile">Storage</span>
           </span>
         </a>
-        <a mat-list-item href="/settings" class="nav-item">
+        <a mat-list-item [routerLink]="'/settings'" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
           <span class="nav-content">
             <mat-icon>settings</mat-icon>
             <span class="no-mobile">Settings</span>

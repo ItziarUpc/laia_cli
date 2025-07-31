@@ -11,7 +11,7 @@ def modify_auth_component_html():
     <mat-card class="example-card" appearance="outlined">
         <mat-card-header>
           <mat-card-title-group>
-            <mat-icon>add</mat-icon>
+            <mat-icon routerLink="/auth/new-user">add</mat-icon>
             <mat-card-title>Users</mat-card-title>
           </mat-card-title-group>
         </mat-card-header>

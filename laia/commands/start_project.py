@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-from laia.generators.backoffice.angular.models_component_ts import modify_models_component_ts
+from laia.generators.backoffice.angular.models.models_component_ts import modify_models_component_ts
 
 def run_command(command, cwd=None):
     try:

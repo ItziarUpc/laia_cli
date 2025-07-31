@@ -15,8 +15,15 @@ mat-card-header {
 }
 
 mat-paginator {
-  justify-content: center;
   margin: 20px;
+}
+
+mat-icon {
+  &:hover {
+    cursor: pointer;
+    background-color: #ebebeb;
+    border-radius: 10px;
+  }
 }
 """
     with open(routing_path, "w") as f:

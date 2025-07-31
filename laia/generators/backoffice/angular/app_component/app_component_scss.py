@@ -55,4 +55,28 @@ mat-sidenav {
     width: 8vh;
   }
 }
+                
+.nav-item {
+  color: #b3b1b1;
+
+  .mat-icon {
+    color: #b3b1b1;
+  }
+
+  span {
+    color: #b3b1b1;
+  }
+
+  &.active-link {
+    color: #000;
+
+    .mat-icon {
+      color: #000;
+    }
+
+    span {
+      color: #000;
+    }
+  }
+}
 """)
