@@ -22,11 +22,14 @@ import { MatInputModule } from '@angular/material/input';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtInterceptor } from './services/jwt.interceptor';
 import { MatPaginatorModule } from '@angular/material/paginator';
+                
+import { KebabCasePipe } from './pipes/kebab-case.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent
+    HomeComponent,
+    KebabCasePipe
   ],
   imports: [
     BrowserModule,

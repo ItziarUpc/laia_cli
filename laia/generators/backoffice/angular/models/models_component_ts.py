@@ -24,7 +24,7 @@ def modify_models_component_ts():
   selector: 'app-models',
   standalone: false,
   templateUrl: './models.component.html',
-  styleUrl: './models.component.scss'
+  styleUrl: './models.component.scss',
 }})
 export class ModelsComponent {{
 

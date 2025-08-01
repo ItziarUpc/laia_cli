@@ -60,7 +60,7 @@ def add_new_route(path: str, component: str, import_path: str, guard: bool = Tru
         return
 
     # 3. Construir la ruta
-    route_entry = f"  {{ path: '{path}', component: {component}"
+    route_entry = f" {{ path: '{path}', component: {component}"
     if guard:
         route_entry += ", canActivate: [AuthGuard]"
     route_entry += " },"

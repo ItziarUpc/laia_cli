@@ -15,6 +15,7 @@ from laia.generators.backoffice.angular.auth.auth_component_ts import modify_aut
 from laia.generators.backoffice.angular.auth.new_user_html import modify_new_user_component_html
 from laia.generators.backoffice.angular.auth.new_user_scss import modify_new_user_component_scss
 from laia.generators.backoffice.angular.auth.new_user_ts import modify_new_user_component_ts
+from laia.generators.backoffice.angular.kebab_pipe_creator import create_kebab_pipe
 from laia.generators.backoffice.angular.services.auth_guard import add_auth_guard
 from laia.generators.backoffice.angular.services.auth_service import add_auth_service
 from laia.generators.backoffice.angular.services.comm_service import add_comm_service
@@ -68,6 +69,7 @@ def generate_angular_project(project_name: str):
   create_directory("backoffice/src/app/pages")
   create_directory("backoffice/src/app/components")
   create_directory("backoffice/src/app/services")
+  create_directory("backoffice/src/app/pipes")
 
   modify_global_page_style()
   modify_app_component_module()
@@ -117,6 +119,7 @@ def generate_angular_project(project_name: str):
     check=True
   )
   
+  create_kebab_pipe()
 
   add_route_to_app_routing()
 

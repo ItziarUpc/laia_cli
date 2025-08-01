@@ -18,7 +18,7 @@ def modify_models_component_html():
       class="example-card"
       appearance="outlined"
       *ngFor="let model of models"
-      [routerLink]="['/models', model.toLowerCase()]"
+      [routerLink]="['/models', model | kebabCase]"
     >
       <mat-card-header>
         <mat-card-title-group>

@@ -72,8 +72,15 @@ def generate_base_interfaces(output_dir: str):
 
 def generate_all_interfaces_from_schemas(schemas_dir: str, output_dir: str):
     generate_base_interfaces(output_dir)
+
     for filename in os.listdir(schemas_dir):
         if filename.endswith(".yaml") or filename.endswith(".yml"):
-            yaml_path = os.path.join(schemas_dir, filename)
-            generate_ts_interface_from_yaml(yaml_path, output_dir)
+            model_name = os.path.splitext(filename)[0]
+            output_ts = os.path.join(output_dir, f"{model_name[0].lower() + model_name[1:]}.ts")
+
+            if not os.path.exists(output_ts):
+                yaml_path = os.path.join(schemas_dir, filename)
+                generate_ts_interface_from_yaml(yaml_path, output_dir)
+            else:
+                print(f"🔁 Interface {output_ts} ya existe, se omite.")
 
