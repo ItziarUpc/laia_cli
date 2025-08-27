@@ -28,6 +28,10 @@ export class JwtInterceptor implements HttpInterceptor {
     if (token) {
       authReq = this.addToken(req, token);
     }
+                
+    if (req.url.includes('/refresh')) {
+      return next.handle(req);
+    }
 
     return next.handle(authReq).pipe(
       catchError(error => {

@@ -144,7 +144,7 @@ def generate_angular_project(project_name: str):
 
   modify_login_component_html()
   modify_login_component_scss()
-  modify_login_component_ts()
+  modify_login_component_ts(project_name)
 
   generate_all_interfaces_from_schemas("backend/openapi/schemas", "backoffice/src/app/interfaces")
 
