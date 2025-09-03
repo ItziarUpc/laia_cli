@@ -13,6 +13,9 @@ def init_project():
     print("\nDo you want to use ontology in your project? [y/N]")
     use_ontology = input("Use ontology: ").strip().lower() == "y"
 
+    print("\nDo you want to use access rights in your project? [y/N]")
+    use_access_rights = input("Use access rights: ").strip().lower() == "y"
+
     # Database
     print("\nWhich database do you want to use?")
     print("Options: [1] MongoDB, [2] PostgreSQL")
@@ -64,6 +67,7 @@ def init_project():
         "database": database,
         "frontend": frontend,
         "backoffice": backoffice,
+        "use_access_rights": use_access_rights
     }
     create_file("laia.json", json.dumps(config, indent=4))
 

@@ -62,6 +62,10 @@ with open(output_file, "w") as f:
 
 openapi_path = os.path.join(os.getcwd(), "backend", openapi_file_name)
 
+laia_config_path = os.path.join(os.getcwd(), "laia.json")
+with open(laia_config_path, "r", encoding="utf-8") as f:
+    laia_config = json.load(f)
+
 async def main():
     app_instance = await LaiaFastApi(
         openapi_path,
@@ -69,6 +73,7 @@ async def main():
         db,
         MongoModelRepository,
         FastAPIOpenapiRepository,
+        laia_config.get("use_access_rights", True),
         backend_jwt_secret_key
     )
 
