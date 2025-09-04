@@ -8,5 +8,16 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  jena-fuseki:
+    image: stain/jena-fuseki
+    container_name: jena-fuseki
+    platform: linux/amd64
+    ports:
+      - "3030:3030"
+    environment:
+      - ADMIN_PASSWORD=admin
+    volumes:
+      - jena_data:/fuseki
 volumes:
   mongo_data:
+  jena_data:

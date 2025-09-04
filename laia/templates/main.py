@@ -4,6 +4,7 @@ from laiagenlib.Infrastructure.LaiaBaseModel.MongoModelRepository import MongoMo
 from laiagenlib.Infrastructure.Openapi.FastAPIOpenapiRepository import FastAPIOpenapiRepository
 from pymongo import MongoClient
 from laiagenlib.Domain.LaiaBaseModel.LaiaBaseModel import LaiaBaseModel
+from laia_ontology_sync import start_background_watcher
 import os
 import uvicorn
 import asyncio
@@ -24,6 +25,10 @@ backend_folder_name = "backend"
 frontend_folder_name = "frontend"
 backend_jwt_secret_key = os.getenv("BACKEND_JWT_SECRET_KEY", "mysecret")
 backend_port = int(os.getenv("BACKEND_PORT", 8005))
+fuseki_base_url = os.getenv("FUSEKI_BASE_URL", "http://localhost:3030")
+fuseki_user= os.getenv("FUSEKI_USER", "admin")
+fuseki_pwd= os.getenv("FUSEKI_PWD", "admin")
+base_uri_prefix = os.getenv("BASE_URI_PREFIX", "http://localhost:8005")
 
 client = MongoClient(mongo_client_url)
 db = client[mongo_database_name]
@@ -73,6 +78,7 @@ async def main():
         db,
         MongoModelRepository,
         FastAPIOpenapiRepository,
+        laia_config.get("use_ontology", False),
         laia_config.get("use_access_rights", True),
         backend_jwt_secret_key
     )
@@ -90,10 +96,8 @@ async def main():
 async def run_laia_flutter_later():
     await asyncio.sleep(5)
 
-    # Ruta esperada de Flutter
     flutter_bin = os.path.expandvars("$HOME/flutter/bin/flutter")
 
-    # Comprobamos si está en el PATH
     flutter_path = shutil.which("flutter")
 
     if flutter_path is None and os.path.exists(flutter_bin):
@@ -101,7 +105,6 @@ async def run_laia_flutter_later():
         os.environ["PATH"] += os.pathsep + flutter_dir
         flutter_path = shutil.which("flutter")
 
-    # Comprobación final
     if flutter_path is None:
         print("❌ Flutter no está instalado ni disponible en $HOME/flutter/bin/flutter")
 
@@ -118,6 +121,20 @@ if __name__ == "__main__":
     server_thread = threading.Thread(target=run_server, daemon=True)
     server_thread.start()
 
+    ontology_enabled = laia_config.get("use_ontology", False)
+
+    if ontology_enabled:
+        start_background_watcher(
+            mongo_url=f"{mongo_client_url}/?replicaSet=rs0",
+            db_name=mongo_database_name,
+            models={}, 
+            fuseki_base=fuseki_base_url,
+            user=fuseki_user,
+            pwd=fuseki_pwd,
+            base_uri_prefix=base_uri_prefix,
+            watch_whole_db=True,
+        )
+
     print("Loading...")
     time.sleep(10)
 
@@ -131,14 +148,13 @@ if __name__ == "__main__":
         spec.loader.exec_module(models)
         sys.modules["models"] = models
 
-        # Aquí forzamos rebuild de todos los modelos del módulo generado
         for attr in dir(models):
             model_class = getattr(models, attr)
             if hasattr(model_class, "model_rebuild"):
                 try:
                     model_class.model_rebuild()
                 except Exception:
-                    pass  # puede que algunos no lo necesiten
+                    pass  
 
 
         time.sleep(10)
