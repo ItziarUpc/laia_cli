@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 from laia.generators.backoffice.backoffice_generator import create_backoffice_project
 from laia.generators.files_generator import copy_template, create_directory, create_file
@@ -16,6 +17,9 @@ FUSEKI_BLOCK = """\
     volumes:
       - jena_data:/fuseki
 """
+
+MONGO_RS_COMMAND_LINE = '    command: ["--replSet", "rs0", "--bind_ip_all"]\n'
+INIT_REPLICA_VOLUME_LINE = '      - ./init-replica.js:/docker-entrypoint-initdb.d/init-replica.js:ro\n'
 
 def ensure_fuseki_in_compose(compose_path: str):
     """Añade el servicio jena-fuseki correctamente en services y el volumen jena_data en el bloque global."""
@@ -95,6 +99,87 @@ def remove_fuseki_from_compose(compose_path: str):
     with open(compose_path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
 
+def ensure_mongo_replicaset_in_compose(compose_path: str):
+    """
+    Dentro del bloque '  mongo:' inserta:
+      - command: ["--replSet", "rs0", "--bind_ip_all"]
+      - en volumes: el bind del init-replica.js
+    Crea 'volumes:' del servicio si no existe.
+    """
+    if not os.path.exists(compose_path):
+        return
+
+    with open(compose_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    # 1) localizar bloque del servicio mongo
+    m = re.search(r"(?ms)^  mongo:\n(?: {4}.+\n)+", content)
+    if not m:
+        # no hay bloque mongo, no tocamos
+        return
+
+    block = m.group(0)
+
+    # 2) asegurar command line
+    if "    command:" not in block:
+        block = block.replace("  mongo:\n", "  mongo:\n" + MONGO_RS_COMMAND_LINE, 1)
+
+    # 3) asegurar el volumen del init-replica.js dentro de volumes del servicio
+    if "    volumes:" in block:
+        # ya hay volumes: añadir el bind si no existe
+        if INIT_REPLICA_VOLUME_LINE.strip() not in block:
+            block = re.sub(
+                r"(?ms)(^    volumes:\n)",
+                r"\1" + INIT_REPLICA_VOLUME_LINE,
+                block
+            )
+    else:
+        # crear volumes con la línea del init-replica (no tocamos mongo_data: si estaba fuera)
+        insert_after = "    ports:\n"
+        if insert_after in block:
+            # intenta añadir después del bloque de ports o environment si existen
+            block = block.replace(insert_after, insert_after)  # noop, seguimos
+        # añadimos un bloque mínimo de volumes en el servicio
+        # (si ya hay mongo_data en el servicio, el usuario lo conservará; si está fuera, no pasa nada)
+        block = re.sub(r"(?m)^(  mongo:\n)", r"\1    volumes:\n" + INIT_REPLICA_VOLUME_LINE, block)
+
+    # 4) escribir de vuelta el compose con el bloque reemplazado
+    new_content = content[:m.start()] + block + content[m.end():]
+    with open(compose_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
+
+def remove_mongo_replicaset_from_compose(compose_path: str):
+    """
+    Elimina del servicio mongo:
+      - la línea 'command: ["--replSet", "rs0", "--bind_ip_all"]'
+      - el bind del init-replica.js dentro de 'volumes:'
+    Si 'volumes:' del servicio queda vacío, lo quita.
+    """
+    if not os.path.exists(compose_path):
+        return
+    with open(compose_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    m = re.search(r"(?ms)^  mongo:\n(?: {4}.+\n)+", content)
+    if not m:
+        return
+
+    block = m.group(0)
+
+    # quitar command line
+    block = block.replace(MONGO_RS_COMMAND_LINE, "")
+
+    # quitar línea de volumen del init script
+    if INIT_REPLICA_VOLUME_LINE in block:
+        block = block.replace(INIT_REPLICA_VOLUME_LINE, "")
+
+        # si 'volumes:' quedó sin ítems, eliminar la sección
+        # detecta '    volumes:\n' seguido NO de '      -'
+        block = re.sub(r"(?ms)^    volumes:\n(?!( {6}|      )-).*\n?", "", block)
+
+    new_content = content[:m.start()] + block + content[m.end():]
+    with open(compose_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
 
 
 def init_project():
@@ -154,8 +239,11 @@ def init_project():
 
     if use_ontology:
         ensure_fuseki_in_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
+        copy_template(os.path.join(TEMPLATES_DIR, "init-replica.js"), "init-replica.js")
+        ensure_mongo_replicaset_in_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
     else:
         remove_fuseki_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
+        remove_mongo_replicaset_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
 
     copy_template(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"), "docker-compose.yaml")
 
