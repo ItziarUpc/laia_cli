@@ -1,6 +1,8 @@
+import asyncio
 import subprocess
 import os
 
+from laia.commands.run_laia_flutter import run_laia_flutter
 from laia.generators.backoffice.angular.models.model_component_files import modify_model_component_files
 from laia.generators.backoffice.angular.models.models_component_ts import modify_models_component_ts
 from laia.generators.backoffice.angular.route_to_app_routing import add_new_route
@@ -41,8 +43,8 @@ def start_project(args):
             print("⚠️  backendpp/main.py not found, cannot start the application.")
 
     if args.frontend:
-        print("🚀 Starting frontend...")
-        # Lógica para arrancar el frontend
+        openapi_path = os.path.join(os.getcwd(), "backend", "openapi.yaml")
+        asyncio.run(run_laia_flutter(openapi_path, "backend", "frontend"))
 
     if args.backoffice:
         print("🚀 Starting backoffice...")
