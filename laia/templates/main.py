@@ -24,6 +24,7 @@ openapi_file_name = "openapi.yaml"
 backend_folder_name = "backend"
 frontend_folder_name = "frontend"
 backend_jwt_secret_key = os.getenv("BACKEND_JWT_SECRET_KEY", "mysecret")
+backend_jwt_refresh_secret_key = os.getenv("BACKEND_JWT_REFRESH_SECRET_KEY", "mysecretrefresh")
 backend_port = int(os.getenv("BACKEND_PORT", 8005))
 fuseki_base_url = os.getenv("FUSEKI_BASE_URL", "http://localhost:3030")
 fuseki_user= os.getenv("FUSEKI_USER", "admin")
@@ -80,7 +81,8 @@ async def main():
         FastAPIOpenapiRepository,
         laia_config.get("use_ontology", False),
         laia_config.get("use_access_rights", True),
-        backend_jwt_secret_key
+        backend_jwt_secret_key,
+        backend_jwt_refresh_secret_key
     )
 
     app = app_instance.api
