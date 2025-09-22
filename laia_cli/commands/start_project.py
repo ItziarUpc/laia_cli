@@ -2,13 +2,13 @@ import asyncio
 import subprocess
 import os
 
-from laia.commands.run_laia_flutter import run_laia_flutter
-from laia.generators.backoffice.angular.models.model_component_files import modify_model_component_files
-from laia.generators.backoffice.angular.models.models_component_ts import modify_models_component_ts
-from laia.generators.backoffice.angular.route_to_app_routing import add_new_route
-from laia.generators.generate_service_ts import generate_ts_service
-from laia.generators.generate_ts_interface import generate_all_interfaces_from_schemas
-from laia.generators.kebab_case_converter import to_kebab_case
+from laia_cli.commands.run_laia_flutter import run_laia_flutter
+from laia_cli.generators.backoffice.angular.models.model_component_files import modify_model_component_files
+from laia_cli.generators.backoffice.angular.models.models_component_ts import modify_models_component_ts
+from laia_cli.generators.backoffice.angular.route_to_app_routing import add_new_route
+from laia_cli.generators.generate_service_ts import generate_ts_service
+from laia_cli.generators.generate_ts_interface import generate_all_interfaces_from_schemas
+from laia_cli.generators.kebab_case_converter import to_kebab_case
 
 def run_command(command, cwd=None):
     try:

@@ -1,7 +1,7 @@
 import os
 import yaml
 
-from laia.generators.files_generator import create_file
+from laia_cli.generators.files_generator import create_file
 
 def generate_schema():
     print("\n📦 Generating new OpenAPI schema...")

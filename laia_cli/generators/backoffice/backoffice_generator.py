@@ -1,6 +1,6 @@
 import subprocess
 
-from laia.generators.backoffice.angular.angular_generator import generate_angular_project
+from laia_cli.generators.backoffice.angular.angular_generator import generate_angular_project
 
 
 def create_backoffice_project(tech: str, project_name: str):

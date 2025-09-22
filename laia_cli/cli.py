@@ -1,8 +1,8 @@
 import argparse
 
-from laia.commands.start_project import start_project
-from laia.commands.init_project import init_project
-from laia.commands.generate_schema import generate_schema
+from laia_cli.commands.start_project import start_project
+from laia_cli.commands.init_project import init_project
+from laia_cli.commands.generate_schema import generate_schema
 
 def main():
     parser = argparse.ArgumentParser(description="Laia CLI")

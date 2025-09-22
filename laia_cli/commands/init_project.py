@@ -2,8 +2,8 @@ import json
 import os
 import re
 
-from laia.generators.backoffice.backoffice_generator import create_backoffice_project
-from laia.generators.files_generator import copy_template, create_directory, create_file
+from laia_cli.generators.backoffice.backoffice_generator import create_backoffice_project
+from laia_cli.generators.files_generator import copy_template, create_directory, create_file
 
 FUSEKI_BLOCK = """\
   jena-fuseki:

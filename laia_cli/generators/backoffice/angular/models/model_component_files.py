@@ -2,7 +2,7 @@ import os
 import yaml
 from pathlib import Path
 
-from laia.generators.kebab_case_converter import to_kebab_case
+from laia_cli.generators.kebab_case_converter import to_kebab_case
 
 
 def modify_model_component_files(yaml_path: str, component_base_path: str):
