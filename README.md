@@ -1,8 +1,5 @@
 # LAIA CLI
 
-[![PyPI version](https://img.shields.io/pypi/v/laia-cli.svg)](https://pypi.org/project/laia-cli/)
-[![Python versions](https://img.shields.io/pypi/pyversions/laia-cli.svg)](https://pypi.org/project/laia-cli/)
-
 **LAIA CLI** es una herramienta de línea de comandos que facilita la generación y gestión de proyectos basados en la librería [laia-gen-lib](https://pypi.org/project/laia-gen-lib/).  
 Está pensada para acelerar el desarrollo de backends y APIs usando **FastAPI**, **Pydantic** y **MongoDB**.
 
@@ -20,7 +17,7 @@ Está pensada para acelerar el desarrollo de backends y APIs usando **FastAPI**,
 
 ## 📥 Instalación
 
-Desde [PyPI](https://pypi.org/project/laia-cli/):
+Desde [PyPI](https://test.pypi.org/project/laia-cli/):
 
 ```bash
 pip install laia-cli
