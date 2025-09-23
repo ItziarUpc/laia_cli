@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name="laia-cli",
-    version="0.1.4",
+    version="0.1.5",
     description="CLI de la librería de LAIA",
     author="Itziar",
     author_email="itziar.mensa08@gmail.com",
-    packages=find_packages(),
+    packages=find_packages(include=["laia_cli", "laia_cli.*"]),
     include_package_data=True,
     install_requires=[
         "pydantic>=2.0",
