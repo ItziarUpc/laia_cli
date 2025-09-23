@@ -1,2 +1,3 @@
 env
-laia.egg-info
+laia_cli.egg-info
+dist
