@@ -95,23 +95,6 @@ async def main():
 
     await server.serve()
 
-async def run_laia_flutter_later():
-    await asyncio.sleep(5)
-
-    flutter_bin = os.path.expandvars("$HOME/flutter/bin/flutter")
-
-    flutter_path = shutil.which("flutter")
-
-    if flutter_path is None and os.path.exists(flutter_bin):
-        flutter_dir = os.path.dirname(flutter_bin)
-        os.environ["PATH"] += os.pathsep + flutter_dir
-        flutter_path = shutil.which("flutter")
-
-    if flutter_path is None:
-        print("❌ Flutter no está instalado ni disponible en $HOME/flutter/bin/flutter")
-
-    await LaiaFlutter(openapi_path, backend_folder_name, frontend_folder_name)
-
 def run_server():
     asyncio.run(main())
 
@@ -176,7 +159,6 @@ if __name__ == "__main__":
         print(f"❌ Error connecting to server: {e}")
 
     print("Server launched, waiting for interruption...", flush=True)
-    #asyncio.create_task(run_laia_flutter_later())
     try:
         while True:
             time.sleep(1)

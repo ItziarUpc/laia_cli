@@ -44,7 +44,7 @@ async def run_laia_flutter(openapi_path, backend_folder_name, frontend_folder_na
     with open(laia_config_path, "r", encoding="utf-8") as f:
         laia_config = json.load(f)
 
-    await LaiaFlutter(openapi_path, backend_folder_name, frontend_folder_name, laia_config.get("use_access_rights", True))
+    await LaiaFlutter(openapi_path, backend_folder_name, frontend_folder_name, use_access_rights=laia_config.get("use_access_rights", True))
 
     print("Ejecutando build_runner...")
     code = await run_command(
