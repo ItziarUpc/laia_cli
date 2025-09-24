@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="laia-cli",
-    version="0.1.8",
+    version="0.1.9",
     description="CLI de la librería de LAIA",
     author="Itziar",
     author_email="itziar.mensa08@gmail.com",
@@ -29,4 +29,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.9",
+    package_data={
+        "laia_cli": ["templates/*"],
+    },
 )
