@@ -21,6 +21,23 @@ services:
     volumes:
       - ./init-replica.js:/docker-entrypoint-initdb.d/init-replica.js:ro
       - jena_data:/fuseki
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_API_PORT}:9000"    
+      - "${MINIO_CONSOLE_PORT}:9001" 
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # Rellena estas dos si luego pones dominio y TLS
+      # MINIO_SERVER_URL: https://s3.tudominio.com
+      # MINIO_BROWSER_REDIRECT_URL: https://console.tudominio.com
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
 volumes:
   mongo_data:  
   jena_data:
+  minio_data:

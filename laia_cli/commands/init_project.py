@@ -18,6 +18,26 @@ FUSEKI_BLOCK = """\
       - jena_data:/fuseki
 """
 
+MINIO_BLOCK = """\
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "${MINIO_API_PORT}:9000"    
+      - "${MINIO_CONSOLE_PORT}:9001" 
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # Rellena estas dos si luego pones dominio y TLS
+      # MINIO_SERVER_URL: https://s3.tudominio.com
+      # MINIO_BROWSER_REDIRECT_URL: https://console.tudominio.com
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+"""
+
 MONGO_RS_COMMAND_LINE = '    command: ["--replSet", "rs0", "--bind_ip_all"]\n'
 INIT_REPLICA_VOLUME_LINE = '      - ./init-replica.js:/docker-entrypoint-initdb.d/init-replica.js:ro\n'
 
@@ -181,6 +201,82 @@ def remove_mongo_replicaset_from_compose(compose_path: str):
     with open(compose_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
+def ensure_minio_in_compose(compose_path: str):
+    """Añade el servicio minio correctamente en services y el volumen minio_data en el bloque global."""
+    if not os.path.exists(compose_path):
+        return
+
+    with open(compose_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    # Ya está → nada que hacer
+    if any("minio:" in line for line in lines):
+        return
+
+    new_lines = []
+    inserted_service = False
+    found_global_volumes = False
+    inserted_volume = False
+
+    for i, line in enumerate(lines):
+        # Detectamos el bloque global de volumes (sin indentación)
+        if line.strip().startswith("volumes:") and not line.startswith(" "):
+            # Insertamos el servicio justo antes del bloque global
+            if not inserted_service:
+                new_lines.append(MINIO_BLOCK)
+                inserted_service = True
+            found_global_volumes = True
+
+        new_lines.append(line)
+
+    # Si no hemos insertado el servicio (porque no había bloque global de volumes todavía)
+    if not inserted_service:
+        new_lines.append(MINIO_BLOCK)
+
+    # Añadimos el volumen global minio_data
+    if found_global_volumes:
+        if not any(line.strip().startswith("minio_data:") for line in new_lines):
+            new_lines.append("  minio_data:\n")
+    else:
+        new_lines.append("\nvolumes:\n  minio_data:\n")
+
+    with open(compose_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+def remove_minio_from_compose(compose_path: str):
+    """Elimina el servicio minio y el volumen global minio_data del docker-compose."""
+    if not os.path.exists(compose_path):
+        return
+
+    with open(compose_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    new_lines = []
+    skip = False
+
+    for line in lines:
+        # Detectar inicio del servicio minio
+        if line.startswith("  minio:"):
+            skip = True
+            continue
+
+        # Si estamos dentro del bloque minio, seguimos saltando
+        if skip:
+            # El bloque termina si encontramos otra definición de servicio (2 espacios) o bloque global
+            if (line.startswith("  ") and not line.startswith("    ")) or not line.startswith(" "):
+                skip = False
+                new_lines.append(line)
+            # Si no, seguimos saltando (líneas internas de jena-fuseki)
+            continue
+
+        # Saltar la definición del volumen global jena_data
+        if line.strip().startswith("minio_data:"):
+            continue
+
+        new_lines.append(line)
+
+    with open(compose_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
 
 def init_project():
     print("\nInitializing project...")
@@ -190,6 +286,9 @@ def init_project():
 
     print("\nDo you want to use ontology in your project? [y/N]")
     use_ontology = input("Use ontology: ").strip().lower() == "y"
+
+    print("\nDo you want to add storage to your project? [y/N]")
+    storage = input("Add storage:  ").strip().lower() == "y"
 
     print("\nDo you want to use access rights in your project? [y/N]")
     use_access_rights = input("Use access rights: ").strip().lower() == "y"
@@ -245,6 +344,11 @@ def init_project():
         remove_fuseki_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
         remove_mongo_replicaset_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
 
+    if storage:
+        ensure_minio_in_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
+    else:
+        remove_minio_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
+
     copy_template(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"), "docker-compose.yaml")
 
     # Configuración del proyecto
@@ -254,7 +358,8 @@ def init_project():
         "database": database,
         "frontend": frontend,
         "backoffice": backoffice,
-        "use_access_rights": use_access_rights
+        "use_access_rights": use_access_rights,
+        "storage": storage
     }
     create_file("laia.json", json.dumps(config, indent=4))
 

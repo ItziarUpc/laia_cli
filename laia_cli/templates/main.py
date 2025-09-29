@@ -82,7 +82,8 @@ async def main():
         laia_config.get("use_ontology", False),
         laia_config.get("use_access_rights", True),
         backend_jwt_secret_key,
-        backend_jwt_refresh_secret_key
+        backend_jwt_refresh_secret_key,
+        laia_config.get("storage", True)
     )
 
     app = app_instance.api
