@@ -346,6 +346,31 @@ def init_project():
 
     if storage:
         ensure_minio_in_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
+        with open(".env", "a") as f:
+            f.write("\n# MinIO configuration\n")
+            f.write("MINIO_ROOT_USER=admin\n")
+            f.write("MINIO_ROOT_PASSWORD=SH16FHqU1Npg3iu3gguXdC8vl\n")
+            f.write("MINIO_DATA_PATH=./data\n")
+            f.write("MINIO_API_PORT=9000\n")
+            f.write("MINIO_CONSOLE_PORT=9001\n")
+
+        with open("backend/main.py", "r") as f:
+            main_content = f.read()
+
+        new_call = (
+            "laia_config.get(\"storage\", True), "
+            "os.getenv('MINIO_ENDPOINT_URL', 'http://localhost:9000'), "
+            "os.getenv('MINIO_ROOT_USER', ''), "
+            "os.getenv('MINIO_ROOT_PASSWORD', '')"
+        )
+        
+        main_content = main_content.replace(
+            'laia_config.get("storage", True)',
+            new_call
+        )
+
+        with open("backend/main.py", "w") as f:
+            f.write(main_content)
     else:
         remove_minio_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
 
