@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from pathlib import Path
 
 from laia_cli.generators.backoffice.backoffice_generator import create_backoffice_project
 from laia_cli.generators.files_generator import copy_template, create_directory, create_file
@@ -16,6 +17,30 @@ FUSEKI_BLOCK = """\
       - ADMIN_PASSWORD=admin
     volumes:
       - jena_data:/fuseki
+"""
+
+def build_minio_block(storage_config: dict) -> str:
+    """Genera dinámicamente el bloque del servicio MinIO usando los valores de config."""
+    api_port = storage_config.get("MINIO_API_PORT", 9000)
+    console_port = storage_config.get("MINIO_CONSOLE_PORT", 9001)
+    root_user = storage_config.get("MINIO_ROOT_USER", "admin")
+    root_password = storage_config.get("MINIO_ROOT_PASSWORD", "password")
+    data_path = storage_config.get("MINIO_DATA_PATH", "./data")
+
+    return f"""
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "{api_port}:9000"
+      - "{console_port}:9001"
+    environment:
+      MINIO_ROOT_USER: {root_user}
+      MINIO_ROOT_PASSWORD: {root_password}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
 """
 
 MONGO_RS_COMMAND_LINE = '    command: ["--replSet", "rs0", "--bind_ip_all"]\n'
@@ -181,6 +206,164 @@ def remove_mongo_replicaset_from_compose(compose_path: str):
     with open(compose_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
+def ensure_minio_in_compose(compose_path: str, storage_config: dict):
+    """Añade el servicio minio correctamente en services y el volumen minio_data en el bloque global."""
+    if not os.path.exists(compose_path):
+        return
+
+    with open(compose_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    # Ya está → nada que hacer
+    if any("minio:" in line for line in lines):
+        return
+
+    new_lines = []
+    inserted_service = False
+    found_global_volumes = False
+    inserted_volume = False
+
+    for i, line in enumerate(lines):
+        # Detectamos el bloque global de volumes (sin indentación)
+        if line.strip().startswith("volumes:") and not line.startswith(" "):
+            # Insertamos el servicio justo antes del bloque global
+            if not inserted_service:
+                minio_block = build_minio_block(storage_config)
+                new_lines.append(minio_block)
+                inserted_service = True
+            found_global_volumes = True
+
+        new_lines.append(line)
+
+    # Si no hemos insertado el servicio (porque no había bloque global de volumes todavía)
+    if not inserted_service:
+        new_lines.append(MINIO_BLOCK)
+
+    # Añadimos el volumen global minio_data
+    if found_global_volumes:
+        if not any(line.strip().startswith("minio_data:") for line in new_lines):
+            new_lines.append("  minio_data:\n")
+    else:
+        new_lines.append("\nvolumes:\n  minio_data:\n")
+
+    with open(compose_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+def remove_minio_from_compose(compose_path: str):
+    """Elimina el servicio minio y el volumen global minio_data del docker-compose."""
+    if not os.path.exists(compose_path):
+        return
+
+    with open(compose_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    new_lines = []
+    skip = False
+
+    for line in lines:
+        # Detectar inicio del servicio minio
+        if line.startswith("  minio:"):
+            skip = True
+            continue
+
+        # Si estamos dentro del bloque minio, seguimos saltando
+        if skip:
+            # El bloque termina si encontramos otra definición de servicio (2 espacios) o bloque global
+            if (line.startswith("  ") and not line.startswith("    ")) or not line.startswith(" "):
+                skip = False
+                new_lines.append(line)
+            # Si no, seguimos saltando (líneas internas de jena-fuseki)
+            continue
+
+        # Saltar la definición del volumen global jena_data
+        if line.strip().startswith("minio_data:"):
+            continue
+
+        new_lines.append(line)
+
+    with open(compose_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
+def create_config_files(use_ontology: bool):
+    """Crea los archivos config/dev.json y config/prod.json con estructura por secciones."""
+    config_dir = Path("config")
+    config_dir.mkdir(exist_ok=True)
+
+    dev_config = {
+        "mongo": {
+            "url": "mongodb://localhost:27017",
+            "database": "test"
+        },
+        "jwt": {
+            "secret_key": "secret1",
+            "refresh_secret_key": "secret2"
+        },
+        "server": {
+            "port": 8005,
+            "base_uri_prefix": "http://localhost:8005"
+        },
+        "storage": {}
+    }
+
+    prod_config = {
+        "mongo": {
+            "url": "mongodb://mongo:27017",
+            "database": "prod_db"
+        },
+        "jwt": {
+            "secret_key": "prod_secret_1",
+            "refresh_secret_key": "prod_secret_2"
+        },
+        "server": {
+            "port": 8005,
+            "base_uri_prefix": "https://api.example.com"
+        },
+        "storage": {}
+    }
+
+    if use_ontology:
+        dev_config["fuseki"] = {
+            "base_url": "http://localhost:3030",
+            "user": "admin",
+            "password": "admin"
+        }
+        prod_config["fuseki"] = {
+            "base_url": "https://fuseki.example.com",
+            "user": "admin",
+            "password": "supersecret"
+        }
+
+    (config_dir / "dev.json").write_text(json.dumps(dev_config, indent=4))
+    (config_dir / "prod.json").write_text(json.dumps(prod_config, indent=4))
+    print("✅ Config files created in /config")
+
+def update_storage_config(config_dir: str):
+    """Activa la configuración de MinIO en los archivos config/dev.json y config/prod.json."""
+    storage_block = {
+        "MINIO_ROOT_USER": "admin",
+        "MINIO_ROOT_PASSWORD": "SH16FHqU1Npg3iu3gguXdC8vl",
+        "MINIO_DATA_PATH": "./data",
+        "MINIO_API_PORT": 9000,
+        "MINIO_CONSOLE_PORT": 9001,
+        "MINIO_ENDPOINT_URL": f"http://localhost:9000"
+    }
+
+    for env_file in ["dev.json", "prod.json"]:
+        config_path = Path(config_dir) / env_file
+
+        if not config_path.exists():
+            print(f"⚠️  Config file {config_path} not found, skipping.")
+            continue
+
+        with open(config_path, "r") as f:
+            config_data = json.load(f)
+
+        config_data["storage"] = storage_block
+
+        with open(config_path, "w") as f:
+            json.dump(config_data, f, indent=4)
+
+        print(f"✅ Updated storage config in {env_file}")
 
 def init_project():
     print("\nInitializing project...")
@@ -190,6 +373,9 @@ def init_project():
 
     print("\nDo you want to use ontology in your project? [y/N]")
     use_ontology = input("Use ontology: ").strip().lower() == "y"
+
+    print("\nDo you want to add storage to your project? [y/N]")
+    storage = input("Add storage:  ").strip().lower() == "y"
 
     print("\nDo you want to use access rights in your project? [y/N]")
     use_access_rights = input("Use access rights: ").strip().lower() == "y"
@@ -235,7 +421,7 @@ def init_project():
     copy_template(os.path.join(TEMPLATES_DIR, "routes.py"), "backend/backend/routes.py")
     copy_template(os.path.join(TEMPLATES_DIR, "models.py"), "backend/backend/models.py")
     copy_template(os.path.join(TEMPLATES_DIR, "requirements.txt"), "requirements.txt")
-    copy_template(os.path.join(TEMPLATES_DIR, ".env"), ".env")
+    create_config_files(use_ontology)
 
     if use_ontology:
         ensure_fuseki_in_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
@@ -244,6 +430,17 @@ def init_project():
     else:
         remove_fuseki_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
         remove_mongo_replicaset_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
+
+    if storage:
+        config_path = Path("config/dev.json")
+        with open(config_path) as f:
+            config_data = json.load(f)
+
+        storage_config = config_data.get("storage", {})
+        ensure_minio_in_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"), storage_config)
+        update_storage_config("config")
+    else:
+        remove_minio_from_compose(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"))
 
     copy_template(os.path.join(TEMPLATES_DIR, "docker-compose.yaml"), "docker-compose.yaml")
 
@@ -254,7 +451,8 @@ def init_project():
         "database": database,
         "frontend": frontend,
         "backoffice": backoffice,
-        "use_access_rights": use_access_rights
+        "use_access_rights": use_access_rights,
+        "storage": storage
     }
     create_file("laia.json", json.dumps(config, indent=4))
 

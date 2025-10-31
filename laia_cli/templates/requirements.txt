@@ -19,3 +19,5 @@ python-dotenv
 uvicorn
 
 rdflib
+
+boto3

@@ -38,6 +38,8 @@ def start_project(args):
         main_file = "backend/main.py"
         if os.path.exists(main_file):
             print("\n🚀 Launching application...")
+            env = os.environ.copy()
+            env["APP_ENV"] = args.env 
             run_command(f"python {main_file}")
         else:
             print("⚠️  backendpp/main.py not found, cannot start the application.")
