@@ -14,22 +14,52 @@ import yaml
 import json
 import threading
 from dotenv import load_dotenv
-import shutil
+from pathlib import Path
 
-load_dotenv()
+def load_config():
+    load_dotenv()
+    env = os.getenv("APP_ENV", "dev")  # 'dev' o 'prod'
+    config_path = Path(__file__).resolve().parent.parent / "config" / f"{env}.json"
 
-mongo_client_url = os.getenv("MONGO_CLIENT_URL", "mongodb://localhost:27017")
-mongo_database_name = os.getenv("MONGO_DATABASE_NAME", "test")
+    if not config_path.exists():
+        raise FileNotFoundError(f"No se encontró el archivo de configuración: {config_path}")
+
+    with open(config_path, "r") as f:
+        return json.load(f)
+
+config = load_config()
+
+# --- MongoDB ---
+mongo_client_url = config["mongo"].get("url", "mongodb://localhost:27017")
+mongo_database_name = config["mongo"].get("database", "test")
+
+# --- JWT ---
+backend_jwt_secret_key = config["jwt"].get("secret_key", "mysecret")
+backend_jwt_refresh_secret_key = config["jwt"].get("refresh_secret_key", "mysecretrefresh")
+
+# --- Server ---
+backend_port = int(config["server"].get("port", 8005))
+base_uri_prefix = config["server"].get("base_uri_prefix", "http://localhost:8005")
+
+# --- Fuseki ---
+fuseki_config = config.get("fuseki", {})
+fuseki_base_url = fuseki_config.get("base_url", "")
+fuseki_user = fuseki_config.get("user", "")
+fuseki_pwd = fuseki_config.get("password", "")
+
+# --- Storage ---
+storage_config = config.get("storage", {})
+storage_enabled = storage_config.get("enabled", False)
+minio_root_user = storage_config.get("MINIO_ROOT_USER", "admin")
+minio_root_password = storage_config.get("MINIO_ROOT_PASSWORD", "SH16FHqU1Npg3iu3gguXdC8vl")
+minio_data_path = storage_config.get("MINIO_DATA_PATH", "./data")   
+minio_api_port = storage_config.get("MINIO_API_PORT", 9000)
+minio_console_port = storage_config.get("MINIO_CONSOLE_PORT", 9001)
+minio_endpoint_url = storage_config.get("MINIO_ENDPOINT_URL", f"http://localhost:{minio_api_port}")
+
 openapi_file_name = "openapi.yaml"
 backend_folder_name = "backend"
 frontend_folder_name = "frontend"
-backend_jwt_secret_key = os.getenv("BACKEND_JWT_SECRET_KEY", "mysecret")
-backend_jwt_refresh_secret_key = os.getenv("BACKEND_JWT_REFRESH_SECRET_KEY", "mysecretrefresh")
-backend_port = int(os.getenv("BACKEND_PORT", 8005))
-fuseki_base_url = os.getenv("FUSEKI_BASE_URL", "http://localhost:3030")
-fuseki_user= os.getenv("FUSEKI_USER", "admin")
-fuseki_pwd= os.getenv("FUSEKI_PWD", "admin")
-base_uri_prefix = os.getenv("BASE_URI_PREFIX", "http://localhost:8005")
 
 client = MongoClient(mongo_client_url)
 db = client[mongo_database_name]
@@ -83,7 +113,10 @@ async def main():
         laia_config.get("use_access_rights", True),
         backend_jwt_secret_key,
         backend_jwt_refresh_secret_key,
-        laia_config.get("storage", True)
+        laia_config.get("storage", True),
+        minio_endpoint_url,
+        minio_root_user,
+        minio_root_password
     )
 
     app = app_instance.api

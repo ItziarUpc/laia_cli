@@ -13,6 +13,7 @@ def main():
     start_parser.add_argument("--backend", action="store_true", help="Start backend server")
     start_parser.add_argument("--backoffice", action="store_true", help="Start backoffice project")
     start_parser.add_argument("--frontend", action="store_true", help="Start frontend project")
+    start_parser.add_argument("--env", choices=["dev", "prod"], default="dev", help="Environment to use")
     subparsers.add_parser("generate-schema", help="Generate new OpenAPI schema")
 
     subparsers.add_parser("help", help="Help")
