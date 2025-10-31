@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="laia-cli",
-    version="0.2.13",
+    version="0.2.14",
     description="CLI de la librería de LAIA",
     author="Itziar",
     author_email="itziar.mensa08@gmail.com",

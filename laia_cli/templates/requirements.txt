@@ -21,3 +21,4 @@ uvicorn
 rdflib
 
 boto3
+werkzeug
