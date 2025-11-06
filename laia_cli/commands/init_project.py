@@ -237,7 +237,8 @@ def ensure_minio_in_compose(compose_path: str, storage_config: dict):
 
     # Si no hemos insertado el servicio (porque no había bloque global de volumes todavía)
     if not inserted_service:
-        new_lines.append(MINIO_BLOCK)
+        minio_block = build_minio_block(storage_config)
+        new_lines.append(minio_block)
 
     # Añadimos el volumen global minio_data
     if found_global_volumes:
@@ -365,49 +366,49 @@ def update_storage_config(config_dir: str):
 
         print(f"✅ Updated storage config in {env_file}")
 
-def init_project():
+def init_project(project_name=None, use_ontology=False, storage=False, use_access_rights=False, interactive=True):
     print("\nInitializing project...")
 
-    print("\nWhat is the name of your project?")
-    project_name = input("Project name: ").strip() or "routeinjector"
+    if interactive:
+        print("\nWhat is the name of your project?")
+        project_name = input("Project name: ").strip() or "routeinjector"
 
-    print("\nDo you want to use ontology in your project? [y/N]")
-    use_ontology = input("Use ontology: ").strip().lower() == "y"
+        print("\nDo you want to use ontology in your project? [y/N]")
+        use_ontology = input("Use ontology: ").strip().lower() == "y"
 
-    print("\nDo you want to add storage to your project? [y/N]")
-    storage = input("Add storage:  ").strip().lower() == "y"
+        print("\nDo you want to add storage to your project? [y/N]")
+        storage = input("Add storage:  ").strip().lower() == "y"
 
-    print("\nDo you want to use access rights in your project? [y/N]")
-    use_access_rights = input("Use access rights: ").strip().lower() == "y"
+        print("\nDo you want to use access rights in your project? [y/N]")
+        use_access_rights = input("Use access rights: ").strip().lower() == "y"
 
-    # Database
-    print("\nWhich database do you want to use?")
-    print("Options: [1] MongoDB, [2] PostgreSQL")
-    db_option = input("Select database (1 or 2): ").strip()
-    database = "MongoDB" if db_option == "1" else "PostgreSQL"
+        """ # Database
+        print("\nWhich database do you want to use?")
+        print("Options: [1] MongoDB, [2] PostgreSQL")
+        db_option = input("Select database (1 or 2): ").strip()
+        database = "MongoDB" if db_option == "1" else "PostgreSQL" """
 
-    # Frontend framework
-    print("\nWhich frontend framework do you want to use?")
-    print("Options: [1] Flutter, [2] Ionic Angular")
-    frontend_option = input("Select frontend (1 or 2): ").strip()
-    frontend = {
-        "1": "Flutter",
-        "2": "Ionic Angular"
-    }.get(frontend_option, "Flutter")  # Default to Flutter
+        """ # Frontend framework
+        print("\nWhich frontend framework do you want to use?")
+        print("Options: [1] Flutter, [2] Ionic Angular")
+        frontend_option = input("Select frontend (1 or 2): ").strip()
+        frontend = {
+            "1": "Flutter",
+            "2": "Ionic Angular"
+        }.get(frontend_option, "Flutter")  # Default to Flutter """
 
-    # Backoffice framework
-    print("\nWhich backoffice framework do you want to use?")
-    print("Options: [1] Angular, [2] React, [3] Vue")
-    backoffice_option = input("Select backoffice (1, 2 or 3): ").strip()
-    backoffice = {
-        "1": "Angular",
-        "2": "React",
-        "3": "Vue"
-    }.get(backoffice_option, "Angular")  # Default to Angular
+        """ # Backoffice framework
+        print("\nWhich backoffice framework do you want to use?")
+        print("Options: [1] Angular, [2] React, [3] Vue")
+        backoffice_option = input("Select backoffice (1, 2 or 3): ").strip()
+        backoffice = {
+            "1": "Angular",
+            "2": "React",
+            "3": "Vue"
+        }.get(backoffice_option, "Angular")  # Default to Angular """
 
     create_directory("backend")
     create_directory("frontend")
-    create_directory("backoffice")
     create_directory("backend/backend")
     create_directory("backend/openapi")
     create_directory("backend/openapi/paths")
@@ -448,9 +449,8 @@ def init_project():
     config = {
         "project_name": project_name,
         "use_ontology": use_ontology,
-        "database": database,
-        "frontend": frontend,
-        "backoffice": backoffice,
+        "database": "MongoDB",
+        "frontend": "Flutter",
         "use_access_rights": use_access_rights,
         "storage": storage
     }
