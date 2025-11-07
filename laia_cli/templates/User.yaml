@@ -1,6 +1,7 @@
 User:
   type: object
   x-auth: true
+  x-mail-on-register: true
   properties:
     name:
       type: string
