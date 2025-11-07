@@ -303,7 +303,15 @@ def create_config_files(use_ontology: bool):
             "port": 8005,
             "base_uri_prefix": "http://localhost:8005"
         },
-        "storage": {}
+        "smtp": {
+            "host": "",
+            "port": 587,
+            "user": "",
+            "password": "",
+            "tls": True
+        },
+        "storage": {},
+        "fuseki": {}
     }
 
     prod_config = {
@@ -319,7 +327,15 @@ def create_config_files(use_ontology: bool):
             "port": 8005,
             "base_uri_prefix": "https://api.example.com"
         },
-        "storage": {}
+        "smtp": {
+            "host": "",
+            "port": 587,
+            "user": "",
+            "password": "",
+            "tls": True
+        },
+        "storage": {},
+        "fuseki": {}
     }
 
     if use_ontology:
@@ -410,6 +426,7 @@ def init_project(project_name=None, use_ontology=False, storage=False, use_acces
     create_directory("backend")
     create_directory("frontend")
     create_directory("backend/backend")
+    create_directory("backend/backend/email_templates")
     create_directory("backend/openapi")
     create_directory("backend/openapi/paths")
     create_directory("backend/openapi/schemas")
@@ -417,6 +434,7 @@ def init_project(project_name=None, use_ontology=False, storage=False, use_acces
     TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 
     copy_template(os.path.join(TEMPLATES_DIR, "main.py"), "backend/main.py")
+    copy_template(os.path.join(TEMPLATES_DIR, "welcome.html"), "backend/backend/email_templates/welcome.html")
     copy_template(os.path.join(TEMPLATES_DIR, "base.yaml"), "backend/openapi/base.yaml")
     copy_template(os.path.join(TEMPLATES_DIR, "User.yaml"), "backend/openapi/schemas/User.yaml")
     copy_template(os.path.join(TEMPLATES_DIR, "routes.py"), "backend/backend/routes.py")

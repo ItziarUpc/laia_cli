@@ -42,24 +42,30 @@ backend_port = int(config["server"].get("port", 8005))
 base_uri_prefix = config["server"].get("base_uri_prefix", "http://localhost:8005")
 
 # --- Fuseki ---
-fuseki_config = config.get("fuseki", {})
-fuseki_base_url = fuseki_config.get("base_url", "")
-fuseki_user = fuseki_config.get("user", "")
-fuseki_pwd = fuseki_config.get("password", "")
+fuseki_base_url = config['fuseki'].get("base_url", "")
+fuseki_user = config['fuseki'].get("user", "")
+fuseki_pwd = config['fuseki'].get("password", "")
 
 # --- Storage ---
-storage_config = config.get("storage", {})
-storage_enabled = storage_config.get("enabled", False)
-minio_root_user = storage_config.get("MINIO_ROOT_USER", "admin")
-minio_root_password = storage_config.get("MINIO_ROOT_PASSWORD", "SH16FHqU1Npg3iu3gguXdC8vl")
-minio_data_path = storage_config.get("MINIO_DATA_PATH", "./data")   
-minio_api_port = storage_config.get("MINIO_API_PORT", 9000)
-minio_console_port = storage_config.get("MINIO_CONSOLE_PORT", 9001)
-minio_endpoint_url = storage_config.get("MINIO_ENDPOINT_URL", f"http://localhost:{minio_api_port}")
+storage_enabled = config['storage'].get("enabled", False)
+minio_root_user = config['storage'].get("MINIO_ROOT_USER", "admin")
+minio_root_password = config['storage'].get("MINIO_ROOT_PASSWORD", "SH16FHqU1Npg3iu3gguXdC8vl")
+minio_data_path = config['storage'].get("MINIO_DATA_PATH", "./data")   
+minio_api_port = config['storage'].get("MINIO_API_PORT", 9000)
+minio_console_port = config['storage'].get("MINIO_CONSOLE_PORT", 9001)
+minio_endpoint_url = config['storage'].get("MINIO_ENDPOINT_URL", f"http://localhost:{minio_api_port}")
+
+# --- SMTP ---
+smtp_host = config['smtp'].get("host", "")
+smtp_port = config['smtp'].get("port", 587)
+smtp_user = config['smtp'].get("user", "")
+smtp_password = config['smtp'].get("password", "")
+smtp_tls = config['smtp'].get("tls", True)
 
 openapi_file_name = "openapi.yaml"
 backend_folder_name = "backend"
 frontend_folder_name = "frontend"
+email_templates_path = "backend/backend/email_templates"
 
 client = MongoClient(mongo_client_url)
 db = client[mongo_database_name]
@@ -116,7 +122,13 @@ async def main():
         laia_config.get("storage", True),
         minio_endpoint_url,
         minio_root_user,
-        minio_root_password
+        minio_root_password,
+        smtp_host,
+        smtp_port,
+        smtp_user,
+        smtp_password,
+        smtp_tls,
+        email_templates_path
     )
 
     app = app_instance.api
