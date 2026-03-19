@@ -1,5 +1,6 @@
 import argparse
 
+from laia_cli.commands.build_project import build_project
 from laia_cli.commands.start_project import start_project
 from laia_cli.commands.init_project import init_project
 from laia_cli.commands.generate_schema import generate_schema
@@ -34,6 +35,8 @@ def main():
             use_access_rights=args.access_rights,
             interactive=not args.no_interactive
         )
+    elif args.command == "build":
+        build_project(args)
     elif args.command == "start":
         start_project(args)
     elif args.command == "generate-schema":
