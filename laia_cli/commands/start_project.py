@@ -46,8 +46,7 @@ def start_project(args):
             print("⚠️  backendpp/main.py not found, cannot start the application.")
 
     if args.frontend:
-        openapi_path = os.path.join(os.getcwd(), "backend", "openapi.yaml")
-        asyncio.run(run_laia_flutter(openapi_path, "backend", "frontend"))
+        asyncio.run(run_laia_flutter("frontend"))
 
     if args.backoffice:
         print("🚀 Starting backoffice...")
