@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 
 from laia_cli.commands.build_project import build_project
 from laia_cli.commands.start_project import start_project
@@ -39,7 +40,7 @@ def main():
             interactive=not args.no_interactive
         )
     elif args.command == "build":
-        build_project(args)
+        asyncio.run(build_project(args))
     elif args.command == "start":
         start_project(args)
     elif args.command == "generate-schema":
