@@ -23,7 +23,7 @@ def main():
     start_parser.add_argument("--env", choices=["dev", "prod"], default="dev", help="Environment to use")
     subparsers.add_parser("generate-schema", help="Generate new OpenAPI schema")
 
-    build_parser = subparsers.add_parser("start", help="Build frontend LAIA project")
+    build_parser = subparsers.add_parser("build", help="Build frontend LAIA project")
     build_parser.add_argument("--frontend", action="store_true", help="Start frontend project")
 
     subparsers.add_parser("help", help="Help")
